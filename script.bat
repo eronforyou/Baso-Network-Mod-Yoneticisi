@@ -5,8 +5,8 @@ setlocal enabledelayedexpansion
 :: Versiyon ve GitHub linkleri
 :: -------------------------
 set "VERSION=1.0.0"
-set "VERSION_URL=https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/version.txt"
-set "SCRIPT_URL=https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/script.bat"
+set "VERSION_URL=https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/main/version.txt"
+set "SCRIPT_URL=https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/main/script.bat"
 set "SCRIPT_NAME=%~nx0"
 :: -------------------------
 
@@ -59,7 +59,9 @@ goto menu
 
 :ekle
 echo Lutfen eklenecek dosyayi secin...
-for /f "usebackq delims=" %%I in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms | Out-Null; $f = New-Object Windows.Forms.OpenFileDialog; $f.InitialDirectory = [Environment]::GetFolderPath('Desktop'); $f.Filter = 'Tüm Dosyalar (*.*)|*.*'; if($f.ShowDialog() -eq 'OK'){Write-Output $f.FileName}"`) do (
+for /f "usebackq delims=" %%I in (
+    `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms | Out-Null; $f = New-Object Windows.Forms.OpenFileDialog; $f.InitialDirectory = [Environment]::GetFolderPath('Desktop'); $f.Filter = 'Tüm Dosyalar (*.*)|*.*'; if($f.ShowDialog() -eq 'OK'){Write-Output $f.FileName}"`
+) do (
     set "file=%%I"
 )
 
@@ -91,13 +93,13 @@ set "inserted="
     if "!line!"=="]" (
         if not defined inserted (
             echo ,>>"%tempfile%"
-            echo   {>>"%tempfile%"
-            echo     "name": "%filename%",>>"%tempfile%"
-            echo     "size": %filesize%,>>"%tempfile%"
-            echo     "sha1": "%sha1%",>>"%tempfile%"
-            echo     "download_link": "/download/mods/%filename%",>>"%tempfile%"
-            echo     "path": "mods/%filename%">>"%tempfile%"
-            echo   }>>"%tempfile%"
+            echo {>>"%tempfile%"
+            echo "name": "%filename%",>>"%tempfile%"
+            echo "size": %filesize%,>>"%tempfile%"
+            echo "sha1": "%sha1%",>>"%tempfile%"
+            echo "download_link": "/download/mods/%filename%",>>"%tempfile%"
+            echo "path": "mods/%filename%">>"%tempfile%"
+            echo }>>"%tempfile%"
             set "inserted=1"
         )
         echo ]>>"%tempfile%"
