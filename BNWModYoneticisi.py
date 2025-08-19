@@ -7,11 +7,13 @@ from colorama import init, Fore
 import random
 import urllib.request
 import sys
+import time
+import pyfiglet
 
 # -------------------------
 # Versiyon Kontrol
 # -------------------------
-CURRENT_VERSION = "1.0.1"
+CURRENT_VERSION = "1.0.2"
 VERSION_URL = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/version.txt"
 SCRIPT_URL  = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/BNWModYoneticisi.py"
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -42,8 +44,36 @@ jsonfile = r"C:\xampp\htdocs\files"
 moddir = os.path.join(os.environ["USERPROFILE"], "AppData", "Roaming", ".basonw", "mods")
 os.makedirs(moddir, exist_ok=True)
 
-# Kırmızı tonları listesi (sadece kırmızı)
 red_tones = [Fore.LIGHTRED_EX, Fore.RED]
+
+# -------------------------
+# Kullanıcı ASCII Başlığı
+# -------------------------
+def get_user_id_from_log():
+    log_path = os.path.join(os.environ["USERPROFILE"], "AppData", "Roaming", ".basonw", "logs", "latest.log")
+    user_id = "Bilinmiyor"
+    try:
+        with open(log_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if "Setting user:" in line:
+                    user_id = line.strip().split("Setting user:")[-1].strip()
+                    break
+    except FileNotFoundError:
+        pass
+    return user_id
+
+def print_user_ascii():
+    user_id = get_user_id_from_log()
+    ascii_banner = pyfiglet.figlet_format(user_id, font="slant")
+    for line in ascii_banner.splitlines():
+        colored_line = ""
+        for c in line:
+            if c.strip() == "":
+                colored_line += c
+            else:
+                color = random.choice(red_tones)
+                colored_line += color + c
+        print(colored_line)
 
 # -------------------------
 # Yardımcı Fonksiyonlar
@@ -73,37 +103,11 @@ def save_json(data):
         f.write(json_text)
 
 # -------------------------
-# ASCII Başlık
-# -------------------------
-ascii_text = r"""
-                                         /$$   /$$          
-                                        | $$  | $$          
-  /$$$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ | $$  | $$ /$$   /$$
- /$$__  $$ /$$__  $$ /$$__  $$| $$__  $$| $$$$$$$$| $$  | $$ 
-| $$$$$$$$| $$  \__/| $$  \ $$| $$  \ $$|_____  $$| $$  | $$
-| $$_____/| $$      | $$  | $$| $$  | $$      | $$| $$  | $$
-|  $$$$$$$| $$      |  $$$$$$/| $$  | $$      | $$|  $$$$$$/ 
- \_______/|__/       \______/ |__/  |__/      |__/ \______/ 
-
-"""
-
-def print_colored_ascii(ascii_text):
-    for line in ascii_text.splitlines():
-        out = ""
-        for c in line:
-            if c.strip() == "":
-                out += c
-            else:
-                color = random.choice(red_tones)
-                out += color + c
-        print(out)
-
-# -------------------------
 # Mod İşlevleri
 # -------------------------
 def add_mod():
     os.system("cls")
-    print_colored_ascii(ascii_text)
+    print_user_ascii()
     Tk().withdraw()
     file_path = filedialog.askopenfilename(title="Lütfen eklenecek dosyayı seçin")
     if not file_path:
@@ -131,7 +135,7 @@ def add_mod():
 
 def list_mods():
     os.system("cls")
-    print_colored_ascii(ascii_text)
+    print_user_ascii()
     mods = os.listdir(moddir)
     print(Fore.LIGHTRED_EX + "Mods klasöründeki modlar:\n")
     if not mods:
@@ -145,7 +149,7 @@ def list_mods():
 
 def delete_mod():
     os.system("cls")
-    print_colored_ascii(ascii_text)
+    print_user_ascii()
     mods = os.listdir(moddir)
     if not mods:
         print(Fore.RED + "Hiç mod bulunamadı.")
@@ -176,17 +180,71 @@ def delete_mod():
     input("Devam etmek için Enter'a basın...")
 
 # -------------------------
+# Kullanıcı Bilgileri
+# -------------------------
+def show_user_info():
+    os.system("cls")
+    print_user_ascii()
+
+    log_path = os.path.join(os.environ["USERPROFILE"], "AppData", "Roaming", ".basonw", "logs", "latest.log")
+    user_id = "Bilinmiyor"
+    password = "Bilinmiyor"
+
+    try:
+        with open(log_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if "Setting user:" in line:
+                    user_id = line.strip().split("Setting user:")[-1].strip()
+                if "Received message:" in line and "|" in line:
+                    password = line.strip().split("|")[-1].strip()
+    except FileNotFoundError:
+        print(Fore.RED + "latest.log dosyası bulunamadı.")
+        input("Devam etmek için Enter'a basın...")
+        return
+
+    mod_list = os.listdir(moddir)
+    total_mods = len(mod_list)
+    total_size = sum(os.path.getsize(os.path.join(moddir, m)) for m in mod_list)
+    last_check_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+    print(Fore.LIGHTRED_EX + f"ID: {user_id}")
+    print(Fore.LIGHTRED_EX + f"Şifre: {password}")
+    print(Fore.LIGHTRED_EX + f"Versiyon: 1.21.4")
+    print(Fore.LIGHTRED_EX + f"Yüklü mod sayısı: {total_mods}")
+    print(Fore.LIGHTRED_EX + f"Toplam mod boyutu: {total_size / 1024:.2f} KB")
+    print(Fore.LIGHTRED_EX + f"Son güncelleme kontrolü: {last_check_time}")
+
+    input("\nDevam etmek için Enter'a basın...")
+
+# -------------------------
+# Launcher Aç
+# -------------------------
+def open_launcher():
+    os.system("cls")
+    print_user_ascii()
+    launcher_path = r"C:\Users\enesb\AppData\Local\Baso Network\basonw.exe"
+    
+    if os.path.exists(launcher_path):
+        print(Fore.LIGHTRED_EX + "Baso Network launcher açılıyor...")
+        os.startfile(launcher_path)
+    else:
+        print(Fore.RED + "Launcher bulunamadı: " + launcher_path)
+    
+    input("\nDevam etmek için Enter'a basın...")
+
+# -------------------------
 # Menü
 # -------------------------
 def menu():
     while True:
         os.system("cls")
-        print_colored_ascii(ascii_text)
-        print(Fore.WHITE + "                Baso Network Mod Yöneticisi")
-        print("")
+        print_user_ascii()
+        print(Fore.WHITE + "Baso Network Mod Yöneticisi\n")
         print(Fore.RED + "1." + Fore.LIGHTRED_EX + " Mod Ekle")
         print(Fore.RED + "2." + Fore.LIGHTRED_EX + " Mod Sil")
         print(Fore.RED + "3." + Fore.LIGHTRED_EX + " Modları Listele")
+        print(Fore.RED + "4." + Fore.LIGHTRED_EX + " Baso Network bilgileri")
+        print(Fore.RED + "5." + Fore.LIGHTRED_EX + " Launcherı aç")
         choice = input(Fore.WHITE + "\nSeçiminiz: ")
 
         if choice == "1":
@@ -195,6 +253,10 @@ def menu():
             delete_mod()
         elif choice == "3":
             list_mods()
+        elif choice == "4":
+            show_user_info()
+        elif choice == "5":
+            open_launcher()
         else:
             print(Fore.LIGHTRED_EX + "Geçersiz seçim.")
             input("Devam etmek için Enter'a basın...")
