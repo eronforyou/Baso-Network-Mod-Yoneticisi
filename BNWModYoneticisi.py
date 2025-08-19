@@ -21,9 +21,11 @@ SCRIPT_PATH = os.path.realpath(__file__)
 def check_update():
     try:
         with urllib.request.urlopen(VERSION_URL) as response:
-            latest_version = response.read().decode("utf-8").strip()
-        if latest_version != CURRENT_VERSION:
-            print(f"Yeni sürüm bulundu: {latest_version} (Sizin sürüm: {CURRENT_VERSION})")
+            latest_version = response.read().decode("utf-8").strip().replace("\ufeff", "")
+        current = CURRENT_VERSION.strip()
+        print(f"Sizin sürüm: {current} | Sunucudaki sürüm: {latest_version}")
+        if latest_version != current:
+            print(f"Yeni sürüm bulundu: {latest_version} (Sizin sürüm: {current})")
             print("Güncelleme indiriliyor...")
             with urllib.request.urlopen(SCRIPT_URL) as response:
                 new_script = response.read()
@@ -32,9 +34,10 @@ def check_update():
             print("Güncelleme tamamlandı! Lütfen programı tekrar başlatın.")
             sys.exit()
         else:
-            print(f"Sürüm güncel: {CURRENT_VERSION}")
+            print(f"Sürüm güncel: {current}")
     except Exception as e:
         print(f"Versiyon kontrolü yapılamadı: {e}")
+
 
 # -------------------------
 # Başlangıç ayarları
