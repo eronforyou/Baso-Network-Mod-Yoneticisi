@@ -451,7 +451,7 @@ def menu():
         os.system("cls")
         user_id, _ = get_user_info()
         print_colored_ascii(user_id)
-        print(Fore.WHITE + "Baso Network Mod Yöneticisi")
+        print(Fore.WHITE + "Baso Network Kullanıcı Paneli")
         print("")
         print(Fore.RED + "1." + Fore.LIGHTRED_EX + " Mod Ekle")
         print(Fore.RED + "2." + Fore.LIGHTRED_EX + " Mod Sil")
