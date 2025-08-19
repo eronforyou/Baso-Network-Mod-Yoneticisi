@@ -1,188 +1,207 @@
-@echo off
-setlocal enabledelayedexpansion
+import os
+import json
+import shutil
+import hashlib
+from tkinter import Tk, filedialog
+from colorama import init, Fore
+import random
+import urllib.request
+import sys
 
-:: -------------------------
-:: Versiyon ve GitHub linkleri
-:: -------------------------
-set "VERSION=1.0.0"
-set "VERSION_URL=https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/main/version.txt"
-set "SCRIPT_URL=https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/main/script.bat"
-set "SCRIPT_NAME=%~nx0"
-:: -------------------------
+# -------------------------
+# Versiyon Kontrol
+# -------------------------
+CURRENT_VERSION = "1.0.0"
+VERSION_URL = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/version.txt"
+SCRIPT_URL  = "https://raw.githubusercontent.com/eronforyou/Baso-Network-Mod-Yoneticisi/refs/heads/main/BNWModYoneticisi.py"
+SCRIPT_PATH = os.path.realpath(__file__)
 
-:: --- Güncelleme kontrolü ---
-echo Mevcut surum: %VERSION%
-echo Sunucudan en son surum kontrol ediliyor...
+def check_update():
+    try:
+        with urllib.request.urlopen(VERSION_URL) as response:
+            latest_version = response.read().decode("utf-8").strip()
+        if latest_version != CURRENT_VERSION:
+            print(f"Yeni sürüm bulundu: {latest_version} (Sizin sürüm: {CURRENT_VERSION})")
+            print("Güncelleme indiriliyor...")
+            with urllib.request.urlopen(SCRIPT_URL) as response:
+                new_script = response.read()
+            with open(SCRIPT_PATH, "wb") as f:
+                f.write(new_script)
+            print("Güncelleme tamamlandı! Lütfen programı tekrar başlatın.")
+            sys.exit()
+        else:
+            print(f"Sürüm güncel: {CURRENT_VERSION}")
+    except Exception as e:
+        print(f"Versiyon kontrolü yapılamadı: {e}")
 
-curl -s -o latest_version.txt %VERSION_URL%
-if exist latest_version.txt (
-    set /p LATEST=<latest_version.txt
-    del /q latest_version.txt
-    if not "%VERSION%"=="%LATEST%" (
-        echo Yeni surum bulundu! [%LATEST%]
-        echo Script indiriliyor...
-        curl -s -o "%SCRIPT_NAME%.new" %SCRIPT_URL%
-        if exist "%SCRIPT_NAME%.new" (
-            move /y "%SCRIPT_NAME%.new" "%SCRIPT_NAME%" >nul
-            echo Script guncellendi. Yeniden baslatiliyor...
-            start "" "%SCRIPT_NAME%"
-            exit
-        ) else (
-            echo [HATA] Script indirilemedi!
-        )
-    ) else (
-        echo Script zaten guncel.
-    )
-) else (
-    echo [HATA] Surum kontrol dosyasi indirilemedi!
-)
+# -------------------------
+# Başlangıç ayarları
+# -------------------------
+init(autoreset=True)
+jsonfile = r"C:\xampp\htdocs\files"
+moddir = os.path.join(os.environ["USERPROFILE"], "AppData", "Roaming", ".basonw", "mods")
+os.makedirs(moddir, exist_ok=True)
 
-:: -------------------------
-:: Mod yoneticisi ayarlari
-:: -------------------------
-set "jsonfile=C:\xampp\htdocs\files"
-set "moddir=C:\Users\enesb\AppData\Roaming\.basonw\mods"
+# Kırmızı tonları listesi (sadece kırmızı)
+red_tones = [Fore.LIGHTRED_EX, Fore.RED]
 
-:menu
-cls
-echo 1. Mod Ekle
-echo 2. Mod Sil
-echo 3. Modlari Listele
-echo 4. Cikis
-set /p choice=Seciminiz: 
+# -------------------------
+# Yardımcı Fonksiyonlar
+# -------------------------
+def calculate_sha1(file_path):
+    sha1 = hashlib.sha1()
+    with open(file_path, "rb") as f:
+        while chunk := f.read(8192):
+            sha1.update(chunk)
+    return sha1.hexdigest()
 
-if "%choice%"=="1" goto ekle
-if "%choice%"=="2" goto sil
-if "%choice%"=="3" goto listele
-if "%choice%"=="4" exit
-goto menu
+def load_json():
+    if os.path.exists(jsonfile):
+        with open(jsonfile, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
 
-:ekle
-echo Lutfen eklenecek dosyayi secin...
-for /f "usebackq delims=" %%I in (
-    `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms | Out-Null; $f = New-Object Windows.Forms.OpenFileDialog; $f.InitialDirectory = [Environment]::GetFolderPath('Desktop'); $f.Filter = 'Tüm Dosyalar (*.*)|*.*'; if($f.ShowDialog() -eq 'OK'){Write-Output $f.FileName}"`
-) do (
-    set "file=%%I"
-)
+def save_json(data):
+    json_text = "[\n"
+    for i, m in enumerate(data):
+        json_text += "  " + json.dumps(m, ensure_ascii=False, indent=2).replace("\n", "\n  ")
+        if i < len(data) - 1:
+            json_text += ","
+        json_text += "\n"
+    json_text += "]\n"
+    with open(jsonfile, "w", encoding="utf-8") as f:
+        f.write(json_text)
 
-if "%file%"=="" (
-    echo Dosya secilmedi.
-    pause
-    goto menu
-)
+# -------------------------
+# ASCII Başlık
+# -------------------------
+ascii_text = r"""
+                                         /$$   /$$          
+                                        | $$  | $$          
+  /$$$$$$   /$$$$$$   /$$$$$$  /$$$$$$$ | $$  | $$ /$$   /$$
+ /$$__  $$ /$$__  $$ /$$__  $$| $$__  $$| $$$$$$$$| $$  | $$ 
+| $$$$$$$$| $$  \__/| $$  \ $$| $$  \ $$|_____  $$| $$  | $$
+| $$_____/| $$      | $$  | $$| $$  | $$      | $$| $$  | $$
+|  $$$$$$$| $$      |  $$$$$$/| $$  | $$      | $$|  $$$$$$/ 
+ \_______/|__/       \______/ |__/  |__/      |__/ \______/ 
 
-for %%A in ("%file%") do set "filename=%%~nxA"
-set "target=%moddir%\%filename%"
-mkdir "%moddir%" >nul 2>&1
-copy /y "%file%" "%target%" >nul
+"""
 
-for %%A in ("%target%") do set "filesize=%%~zA"
+def print_colored_ascii(ascii_text):
+    for line in ascii_text.splitlines():
+        out = ""
+        for c in line:
+            if c.strip() == "":
+                out += c
+            else:
+                color = random.choice(red_tones)
+                out += color + c
+        print(out)
 
-:: SHA1 her defasında sıfırlansın
-set "sha1="
-for /f "skip=1 tokens=1" %%A in ('certutil -hashfile "%target%" SHA1') do if not defined sha1 set "sha1=%%A"
+# -------------------------
+# Mod İşlevleri
+# -------------------------
+def add_mod():
+    os.system("cls")
+    print_colored_ascii(ascii_text)
+    Tk().withdraw()
+    file_path = filedialog.askopenfilename(title="Lütfen eklenecek dosyayı seçin")
+    if not file_path:
+        print(Fore.LIGHTRED_EX + "Dosya seçilmedi.")
+        input("Devam etmek için Enter'a basın...")
+        return
 
-set "tempfile=%temp%\files_temp.json"
-set "inserted="
+    filename = os.path.basename(file_path)
+    target_path = os.path.join(moddir, filename)
+    shutil.copy2(file_path, target_path)
+    filesize = os.path.getsize(target_path)
+    sha1 = calculate_sha1(target_path)
 
-(for /f "usebackq delims=" %%L in ("%jsonfile%") do (
-    set "line=%%L"
-    setlocal enabledelayedexpansion
+    mods = load_json()
+    mods.append({
+        "name": filename,
+        "size": filesize,
+        "sha1": sha1,
+        "download_link": f"/download/mods/{filename}",
+        "path": f"mods/{filename}"
+    })
+    save_json(mods)
+    print(Fore.LIGHTRED_EX + f"Mod eklendi: {filename}")
+    input("Devam etmek için Enter'a basın...")
 
-    :: JSON sonundan bir önceki yere ekle
-    if "!line!"=="]" (
-        if not defined inserted (
-            echo ,>>"%tempfile%"
-            echo {>>"%tempfile%"
-            echo "name": "%filename%",>>"%tempfile%"
-            echo "size": %filesize%,>>"%tempfile%"
-            echo "sha1": "%sha1%",>>"%tempfile%"
-            echo "download_link": "/download/mods/%filename%",>>"%tempfile%"
-            echo "path": "mods/%filename%">>"%tempfile%"
-            echo }>>"%tempfile%"
-            set "inserted=1"
-        )
-        echo ]>>"%tempfile%"
-    ) else (
-        echo !line!>>"%tempfile%"
-    )
-    endlocal
-))
-move /y "%tempfile%" "%jsonfile%" >nul
+def list_mods():
+    os.system("cls")
+    print_colored_ascii(ascii_text)
+    mods = os.listdir(moddir)
+    print(Fore.LIGHTRED_EX + "Mods klasöründeki modlar:\n")
+    if not mods:
+        print(Fore.RED + "Hiç mod bulunamadı.")
+    else:
+        colors = [Fore.RED, Fore.LIGHTRED_EX]
+        for i, m in enumerate(mods):
+            color = colors[i % 2]
+            print(color + f" - {m}")
+    input("\nDevam etmek için Enter'a basın...")
 
-echo Mod eklendi: %filename%
-pause
-goto menu
+def delete_mod():
+    os.system("cls")
+    print_colored_ascii(ascii_text)
+    mods = os.listdir(moddir)
+    if not mods:
+        print(Fore.RED + "Hiç mod bulunamadı.")
+        input("Devam etmek için Enter'a basın...")
+        return
 
-:sil
-cls
-echo Silinecek mod secin:
-set /a count=0
-for %%A in ("%moddir%\*") do (
-    set /a count+=1
-    set "mod[!count!]=%%~nxA"
-    echo !count!. %%~nxA
-)
+    print(Fore.LIGHTRED_EX + "Silinecek mod seçin:\n")
+    colors = [Fore.RED, Fore.LIGHTRED_EX]
+    for i, m in enumerate(mods, 1):
+        color_number = colors[(i-1) % 2]
+        color_name = colors[i % 2]
+        print(color_number + f"{i}." + color_name + f" {m}")
 
-if %count%==0 (
-    echo Hic mod bulunamadi.
-    pause
-    goto menu
-)
+    choice = input(Fore.LIGHTRED_EX + "\nNumara girin: ")
+    if not choice.isdigit() or not (1 <= int(choice) <= len(mods)):
+        print(Fore.LIGHTRED_EX + "Geçersiz seçim.")
+        input("Devam etmek için Enter'a basın...")
+        return
 
-set /p modchoice=Numara girin: 
-if "%modchoice%"=="" goto menu
+    modname = mods[int(choice)-1]
+    os.remove(os.path.join(moddir, modname))
 
-set "modname=!mod[%modchoice%]!"
-if "!modname!"=="" (
-    echo Gecersiz secim.
-    pause
-    goto menu
-)
+    data = load_json()
+    data = [m for m in data if m["name"] != modname]
+    save_json(data)
 
-del "%moddir%\!modname!" >nul 2>&1
+    print(Fore.LIGHTRED_EX + f"Mod silindi: {modname}")
+    input("Devam etmek için Enter'a basın...")
 
-set "tempfile=%temp%\files_temp.json"
-set "prevline="
-set "skipblock="
+# -------------------------
+# Menü
+# -------------------------
+def menu():
+    while True:
+        os.system("cls")
+        print_colored_ascii(ascii_text)
+        print(Fore.WHITE + "                Baso Network Mod Yöneticisi")
+        print("")
+        print(Fore.RED + "1." + Fore.LIGHTRED_EX + " Mod Ekle")
+        print(Fore.RED + "2." + Fore.LIGHTRED_EX + " Mod Sil")
+        print(Fore.RED + "3." + Fore.LIGHTRED_EX + " Modları Listele")
+        choice = input(Fore.WHITE + "\nSeçiminiz: ")
 
-(for /f "usebackq delims=" %%L in ("%jsonfile%") do (
-    set "line=%%L"
+        if choice == "1":
+            add_mod()
+        elif choice == "2":
+            delete_mod()
+        elif choice == "3":
+            list_mods()
+        else:
+            print(Fore.LIGHTRED_EX + "Geçersiz seçim.")
+            input("Devam etmek için Enter'a basın...")
 
-    if defined skipblock (
-        echo %%L | findstr /c:"}" >nul
-        if not errorlevel 1 set "skipblock="
-    ) else (
-        echo %%L | findstr /c:"\"!modname!\"" >nul
-        if not errorlevel 1 (
-            set "skipblock=1"
-            :: Önceki satır "}," ise son blok olabilir, onu düzelt
-            echo !prevline! | findstr /c:"}," >nul
-            if not errorlevel 1 set "prevline=!prevline:},=}!"
-        ) else (
-            if defined prevline echo !prevline!>>"%tempfile%"
-            set "prevline=!line!"
-        )
-    )
-))
-if defined prevline echo !prevline!>>"%tempfile%"
-
-move /y "%tempfile%" "%jsonfile%" >nul
-
-echo Mod silindi: !modname!
-pause
-goto menu
-
-:listele
-cls
-echo Mods klasorundeki modlar:
-echo.
-set /a count=0
-for %%A in ("%moddir%\*") do (
-    set /a count+=1
-    echo %%~nxA
-    echo.
-)
-if %count%==0 echo Hic mod bulunamadi.
-pause
-goto menu
+# -------------------------
+# Başlat
+# -------------------------
+if __name__ == "__main__":
+    check_update()
+    menu()
