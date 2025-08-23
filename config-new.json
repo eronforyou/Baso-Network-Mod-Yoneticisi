@@ -1,0 +1,102 @@
+{
+    "isRegisterActive": true,
+    "wssIp": "oyna.baso.network:9191",
+    "serverIp": "oyna.baso.networak",
+    "optionalMods": [],
+    "whitelist": [
+        "assets",
+        "natives",
+        "versions",
+        "config",
+        "data",
+        "saves",
+        "downloads",
+        "screenshots",
+        "logs",
+        ".fabric",
+        "data",
+        "servers.dat",
+        "servers.dat_old",
+        "launcher_settings.json",
+        "crash-reports",
+        "iris.properties",
+        "options.txt",
+        "usercache.json",
+        "irisUpdateInfo.json",
+        "resourcepacks",
+        "runtimes",
+        "shaderpacks",
+        "launcher-logs",
+        ".replay-cache",
+        "replay_recordings",
+        "server-resource-packs",
+        "xaero",
+        "XaeroWaypoints",
+        "command_history.txt",
+        "debug"
+    ],
+    "news": [
+        {
+            "image": "https://baso.network/apps/main/public/assets/img/uploads/a6c0fc035f5c7fb4b3aad7c7b56835c4.png?cache=1704679417",
+            "title": "Yeni Launcher'ımız!"
+        },
+        {
+            "image": "https://static.wikia.nocookie.net/minecraft_gamepedia/images/d/d3/Vigilant_Scoundrel_in_game_UUU_camera.png/revision/latest/scale-to-width-down/697?cb=20221016073942",
+            "title": "Yüksek hile koruması!"
+        },
+        {
+            "image": "https://cdn.discordapp.com/attachments/1201206954614345819/1205882260058935306/image.png?ex=65d9fc5f&is=65c7875f&hm=0d7483626569cbd35594cd36dccaf6914e9d0a70ab27598fedafdf4e68a948db&",
+            "title": "Yepyeni tasarım!"
+        }
+    ],
+    "game": {
+        "name": "Baso Network",
+        "image": "/logo.png",
+        "version": "1.21.4",
+        "type": "fabric",
+        "typeVersion": "0.17.0"
+    },
+    "socials": [
+        {
+            "icon": "youtube",
+            "link": "https://youtube.com/@Baso?si=FVP3jtHWRjNrOwgB https://x.com/BasoHQ?t=7yuaghvWfTGJa5XKKuCbYg&s=09",
+            "name": "Youtube"
+        },
+        {
+            "icon": "twitter",
+            "link": "https://twitter.com/BasoHQ?t=7yuaghvWfTGJa5XKKuCbYg",
+            "name": "twitter"
+        },
+        {
+            "icon": "web",
+            "link": "https://baso.network",
+            "name": "Web"
+        },
+        {
+            "icon": "discord",
+            "link": "https://discord.gg/basonetwork",
+            "name": "Discord"
+        }
+    ],
+    "version": "2.2.6",
+    "notes": "Hata raporlama",
+    "pub_date": "2025-04-18T16:28:57Z",
+    "platforms": {
+        "windows-x86_64": {
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTM0NBeTIzMHdPN3c5TjU5U05USFZMVkR0K01rM2VmZXhEdU0xQklVZzBNOVYyUXFXSDVHbFdoSW94eWkwK0k3a3RoTUhvQTlvcU03TTROSFVVblRSdjVnUDNhQVN5OFEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzUzOTkyNjM1CWZpbGU6QmFzbyBOZXR3b3JrXzIuMi42X3g2NC1zZXR1cC5uc2lzLnppcApnVXVSMkFYQjhwWnd1VjQrZ01SLzFiWnpsdTIxZTJNOTU4UmRVNU9MVHIwMDBGaW9NdkFlYVU5RnNXK3B3d1REQXE1Q0NaWXR5d1R6RnRKZCtKMjBBZz09Cg==",
+            "url": "https://launcher.baso.network/download/BasoNetwork_2.2.6_x64-setup.nsis.zip"
+        },
+        "darwin-x86_64": {
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTM0NBeTIzMHdPN3lNSFU2WUVMbU5MUVYycFJkOUY3QjVONjZIaXZTSm8xQ1diSEpuS3JscjVJaVpFSk5SdEpsYW0zVGlaUjBFNVY1SGpRV0s1NlFDNFZhOENIcEQzUFE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQ1OTMxOTcwCWZpbGU6QmFzbyBOZXR3b3JrXzIuMi4zX3g2NC1zZXR1cC5uc2lzLnppcAp1Z0RZZ1BCWmR6TnlSeVIwUWRlV2JTc0QzbWc1eWdVQ0lCSFBGK1cxVFFDTFF3V1ZvVk53WkhCdUU3aWRVekg3NXA4VGp1cGtGRnBEUDhYUlpTWHpCUT09Cg==",
+            "url": "https://launcher.baso.network/download/BasoNetwork_2.2.3_x64-setup.nsis.zip"
+        },
+        "darwin-aarch64": {
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTM0NBeTIzMHdPNzlnbU05Mm1vUFc3ckJ0eTJQMElLYzJmeVA3K096RVRQNm5IVE4yUVVqcEI0R3lQM1VBa09TYlJqVXRVT0kzYlN3bEVIZTJiNVVQS1p1ejQ5NW01QVFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzUzOTYzMTk0CWZpbGU6QmFzbyBOZXR3b3JrLmFwcC50YXIuZ3oKZkFOKzlyYzkyMVdNL3dJMGdBTlllcytUUGNYSHFqVnozT1VGWTJOS05oaE5lQjhPeTh6WmZPMFdrdDJuTzBzSXRRclRBYWMyWmE4WFFYQ0pQZWlVQ2c9PQo=",
+            "url": "https://launcher.baso.network/download/BasoNetwork-2.2.5-AARCH64.app.tar.gz"
+        },
+        "linux-x86_64": {
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTM0NBeTIzMHdPNzRCSUNwMVI1Q3FtdHEyNFdLbVlScmZXS2lhYWNaekQrS1AwU0x3ZXRlYmhTckpTekU2L3M1L1ZhOElkbFJSeDhTSGluTG1BMTNtb3VXbUhjZmlFU3dRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzUzOTYzMzY3CWZpbGU6QmFzbyBOZXR3b3JrXzIuMi41X2FtZDY0LkFwcEltYWdlLnRhci5negp0TlNpd2RmYTZHdzZOSXBHRk1OUXgwaWMxV3ZLbjJ5WStSdzNjb1hoRWROOS9lenp1YlFiVjdoRjVRZ2daRGI1d1R3ZFJLRDY4MXNZdTBDSGVMUHFDdz09Cg==",
+            "url": "https://launcher.baso.network/download/BasoNetwork_2.2.5_amd64.AppImage.tar.gz"
+        }
+    }
+}
